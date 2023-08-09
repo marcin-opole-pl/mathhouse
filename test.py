@@ -1,20 +1,25 @@
-class Hero:
-    def __init__(self, damage, monster):
-        self.damage = damage
-        self.monster = monster
+class Box():
+    def __init__(self, next_loc):
+        self.location = 0
 
-    def attack(self):
-        self.monster.get_damage(self.damage)
+    def next_move(self, next_loc):
+        move = self.location + next_loc
+        return move
 
-class Monster:
-    def __init__(self, health, energy):
-        self.health = health
-        self.energy = energy
+    def visited_loc():
+        visited = [0]
+        return visited
 
-    def get_damage(self, amount):
-        self.health -= amount
+class FreeLocation:
+    def __init__(self):
+        self.free_location = 0
+    
+    def update(self):
+        self.free_location = 1
+        return self.free_location
 
-class Scorpion(Monster):
-    def __init__(self, health, energy, poison_damage):
-        super().__init__(health, energy)
-        self.poison_damage = poison_damage
+fl = FreeLocation()
+
+box1 = Box(fl.update())
+
+print(box1.next_move(fl.update()))
