@@ -3,7 +3,7 @@ from random import randint
 
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, speed, free_location):
+    def __init__(self, speed):
         super().__init__()
         # Load all box images
         image_1 = pygame.image.load('images/box_0.png').convert_alpha()
@@ -14,22 +14,14 @@ class Box(pygame.sprite.Sprite):
         images = {0: image_1, 1: image_2}
         # Set image
         self.image = images[self.value]
-        self.rect = self.image.get_rect(midtop=(105,0)) # Draw rectangle
+        self.rect = self.image.get_rect(midtop=(0,400)) # Draw rectangle
         self.speed = speed
         self.locations = {1: (105,0)}
         
 
-    def update(self, free_location):
-        if self.rect.y <= 100:
-            self.rect.y += self.speed
-#            print(self.rect.y)
-        if self.rect.y == 102: # for speed 3 must be 102, rest - 104
-            if self.rect.x <= 582: # for 3 must be 582, rest - 581
-                self.rect.x += self.speed
-#                print(self.rect.x)
-        if self.rect.x == 585:
-            if self.rect.y <= 390:
-                self.rect.y += self.speed  
+    def update(self):
+        if self.rect.x <= 100:
+            self.rect.x += self.speed
 
 
 class FreeLocation:
@@ -57,7 +49,7 @@ pygame.time.set_timer(box_timer,1500)
 
 
 # Static graphic
-background_surf = pygame.image.load('images/background.png').convert_alpha()
+background_surf = pygame.image.load('images/background_1.png').convert_alpha()
 
 # Dynamic graphic
 box_group = pygame.sprite.Group()    # Create a group for sprite
