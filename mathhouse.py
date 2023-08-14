@@ -17,74 +17,83 @@ class Box(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midleft=(-50,400)) # Draw rectangle
 
         self.location = 0
-        self.old_location = 0
+        self.speed = 2
+        self.distance = 60
         self.fl = fl
 
-        
     def return_loc(self, i):
-        # Return previous location to the list
+        '''Return previous location to the FreeLocation list'''
         if i not in fl.free_location:
             self.fl.return_loc(i)
 
+    def move_from_position_to_position(self, i):
+        ''' If next position is available, move to next position'''
+        if self.location == i:
+            if (i+1) in fl.free_location:
+                if self.rect.x <= ((self.distance * (i+1)) - self.speed):
+                    self.rect.x += self.speed
+
+    def action_at_position(self, i):
+        ''' If at new position and position location is available,
+        remove from FreeLocation list new location,
+        set location to new location, 
+        return current location to FreeLocation list.
+        DOES NOT WORK FOR position 1''' 
+        if self.rect.x == (self.distance * i) and i in fl.free_location:
+            fl.remove(i)
+            self.location = i
+            self.return_loc(i-1)
 
     def update(self):
         # Move from pos 0 to 1
-        if self.location == 0:
-            if 1 in fl.free_location:
-                if self.rect.x <= 48:
-                    self.rect.x += 2
+        self.move_from_position_to_position(0)
         # Pos 1
         if self.rect.x == 50 and 1 in fl.free_location:
             fl.remove(1)
             self.location = 1
         # Move from 1 to 2
-        if self.location == 1:
-            if 2 in fl.free_location:
-                if self.rect.x <= 98:
-                    self.rect.x += 2
+        self.move_from_position_to_position(1)
         # Pos 2
-        if self.rect.x == 100 and 2 in fl.free_location:
-            fl.remove(2)
-            self.location = 2
-            self.return_loc(1)
+        self.action_at_position(2)
         # Move from 2 to 3
-        if self.location == 2:
-            if 3 in fl.free_location:
-                if self.rect.x <= 148:
-                    self.rect.x += 2
+        self.move_from_position_to_position(2)
         # Pos 3
-        if self.rect.x == 150 and 3 in fl.free_location:
-            fl.remove(3)
-            self.location = 3
-            self.return_loc(2)
+        self.action_at_position(3)
         # Move from 3 to 4
-        if self.location == 3:
-            if 4 in fl.free_location:
-                if self.rect.x <= 198:
-                    self.rect.x += 2
+        self.move_from_position_to_position(3)
         # Pos 4
-        if self.rect.x == 200 and 4 in fl.free_location:
-            fl.remove(4)
-            self.location = 4
-            self.return_loc(3)
+        self.action_at_position(4)
         # Move from 4 to 5
-        if self.location == 4:
-            if 5 in fl.free_location:
-                if self.rect.x <= 248:
-                    self.rect.x += 2
+        self.move_from_position_to_position(4)
         # Pos 5
-        if self.rect.x == 250 and 5 in fl.free_location:
-            fl.remove(5)
-            self.location = 5
-            self.return_loc(4)
+        self.action_at_position(5)
+        # Move form 5 to 6
+        self.move_from_position_to_position(5)
+        # Pos 6
+        self.action_at_position(6)
+        # Move from 6 to 7
+        self.move_from_position_to_position(6)
+        # Pos 7
+        self.action_at_position(7)
+        # Move form 7 to 8
+        self.move_from_position_to_position(7)
+        # Pos 8
+        self.action_at_position(8)
+        # Move from 8 to 9
+        self.move_from_position_to_position(8)
+        # Pos 9
+        self.action_at_position(9)
+        # Move from 9 to 10
+        self.move_from_position_to_position(9)
+        # Pos 10
+        self.action_at_position(10)
 
-
-        print(f'location: {self.location}, x: {self.rect.x}')
-        print(f'locations: {fl.free_location}')
+#        print(f'location: {self.location}, x: {self.rect.x}')
+#        print(f'locations: {fl.free_location}')
 
 class FreeLocation():
     def __init__(self):
-        self.free_location = [1,2,3,4,5,6,7,8,9]
+        self.free_location = [1,2,3,4,5,6,7,8,9,10]
         self.move = 0
 
     def remove(self, move):
@@ -96,6 +105,17 @@ class FreeLocation():
         '''Returns used location to the list'''
         self.free_location.append(used_loc)
         return self.free_location.sort()
+
+
+class Calculator():
+    def __init__(self):
+        self.add = False
+        self.subtract = False
+        self.multiply = False
+        self.divide = False
+        self.destroy = False
+
+
 
 fl = FreeLocation()
 
@@ -130,8 +150,8 @@ while True:
         # Add box to box_group
         if event.type == box_timer and len(fl.free_location) > 0:
             box_group.add(Box(fl=fl))
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            box_group.add(Box(fl=fl))
+#        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+#            box_group.add(Box(fl=fl))
 
 
     screen.blit(background_surf,(0,0))   # Displays background
