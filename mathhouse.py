@@ -3,7 +3,8 @@ from random import randint
 
 
 class Box(pygame.sprite.Sprite):
-    def __init__(self, fl):
+    ''' Operates boxes behavior'''
+    def __init__(self, fl, calc):
         super().__init__()
         # Load all box images
         image_1 = pygame.image.load('images/box_0.png').convert_alpha()
@@ -20,6 +21,7 @@ class Box(pygame.sprite.Sprite):
         self.speed = 2
         self.distance = 60
         self.fl = fl
+        self.calc = calc
 
     def return_loc(self, i):
         '''Return previous location to the FreeLocation list'''
@@ -88,10 +90,16 @@ class Box(pygame.sprite.Sprite):
         # Pos 10
         self.action_at_position(10)
 
+        # Check for operation -> MAKE a NEW FUNCTION
+        if self.location == 10 and calc.add: # NOT WORKING
+            print('added')
+            print('--------')
+
 #        print(f'location: {self.location}, x: {self.rect.x}')
 #        print(f'locations: {fl.free_location}')
 
 class FreeLocation():
+    ''' Handles location related knowledge'''
     def __init__(self):
         self.free_location = [1,2,3,4,5,6,7,8,9,10]
         self.move = 0
@@ -108,7 +116,10 @@ class FreeLocation():
 
 
 class Calculator():
+    ''' Does the math'''
     def __init__(self):
+        self.total = 0
+
         self.add = False
         self.subtract = False
         self.multiply = False
@@ -116,8 +127,24 @@ class Calculator():
         self.destroy = False
 
 
+class Operator(pygame.sprite.Sprite):
+    ''' Handles operators and other buttons'''
+    def __init__(self, operator):
+        super().__init__()
+        # Load all operators images
+        image_1 = pygame.image.load('images/plus.png').convert_alpha()
+        image_2 = pygame.image.load('images/box_1.png').convert_alpha()
+        self.operator = operator
+        # Dict to store values and images
+        images = {'+': image_1, '-': image_2}
+        # Set image
+        self.image = images[self.operator]
+        if self.operator == '+':
+            self.rect = self.image.get_rect(topleft=(650,470)) # Draw rectangle
+
 
 fl = FreeLocation()
+calc = Calculator()
 
 
 pygame.init()
@@ -139,7 +166,9 @@ background_surf = pygame.image.load('images/background_1.png').convert_alpha()
 
 # Dynamic graphic
 box_group = pygame.sprite.Group()    # Create a group for sprite
-box_group.add(Box(fl=fl))#Add instance of Box to the group
+box_group.add(Box(fl=fl, calc=calc))#Add instance of Box to the group
+operator_group = pygame.sprite.Group() # Create a group for operators
+operator_group.add(Operator('+')) # Add plus button
 
 while True:
     for event in pygame.event.get():
@@ -149,14 +178,20 @@ while True:
             exit()
         # Add box to box_group
         if event.type == box_timer and len(fl.free_location) > 0:
-            box_group.add(Box(fl=fl))
+            box_group.add(Box(fl=fl, calc=calc))
+        # Check for operation
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_KP_PLUS:
+            calc.add = True
+        if event.type == pygame.KEYUP and event.key == pygame.K_KP_PLUS:
+            calc.add = False
+        # Testing sequence
 #        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 #            box_group.add(Box(fl=fl))
-
 
     screen.blit(background_surf,(0,0))   # Displays background
     box_group.draw(screen) # Displays box
     box_group.update() # Move box
+    operator_group.draw(screen)
 
 
 #    print(pygame.mouse.get_pos())  # Get mouse position

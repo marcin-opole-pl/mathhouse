@@ -2,9 +2,11 @@
     "cSpell.words": [
         "blit",
         "KEYDOWN",
+        "KEYUP",
         "midleft",
         "midtop",
         "spritecollide",
+        "topleft",
         "USEREVENT"
     ]
 }
