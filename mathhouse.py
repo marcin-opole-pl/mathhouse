@@ -219,21 +219,11 @@ class Calculator():
             screen.blit(error3_surf, error3_rect)
 
 
-class Operator(pygame.sprite.Sprite):
+class Operator():
     ''' Handles operators and other buttons'''
-    def __init__(self, operator):
+    def __init__(self):
         super().__init__()
-        # Load all operators images
-        image_1 = pygame.image.load('images/plus.png').convert_alpha()
-        image_2 = pygame.image.load('images/box_1.png').convert_alpha()
-        self.operator = operator
-        # Dict to store values and images
-        images = {'+': image_1, '-': image_2}
-        # Set image
-        self.image = images[self.operator]
-        if self.operator == '+':
-            self.rect = self.image.get_rect(topleft=(650,470)) # Draw rectangle
-
+        # TO DO
 
 class Conveyor(pygame.sprite.Sprite):
     ''' Conveyor'''
@@ -289,8 +279,6 @@ machine_surf = pygame.image.load('images/machine.png').convert_alpha()
 # Dynamic graphic
 box_group = pygame.sprite.Group()    # Create a group for sprite
 box_group.add(Box(fl=fl, calc=calc))#Add instance of Box to the group
-operator_group = pygame.sprite.Group() # Create a group for operators
-operator_group.add(Operator('+')) # Add plus button
 conveyor_group = pygame.sprite.GroupSingle() # Create a group for conveyor
 conveyor_group.add(Conveyor()) # Add conveyor
 
@@ -334,7 +322,6 @@ while True:
     box_group.draw(screen) # Displays box
     box_group.update() # Move box
     screen.blit(machine_surf, (660,310)) # Display machine
-    operator_group.draw(screen) # Display operators
     calc.display_total()
     calc.display_errors()
 
