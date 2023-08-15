@@ -19,7 +19,7 @@ class Box(pygame.sprite.Sprite):
         image_9 = pygame.image.load('images/box_9.png').convert_alpha()
 
         # Randomize value of the box
-        self.value = randint(0,3)
+        self.value = randint(0,9)
         # Dict to store values and images
         images = {
             0: image_0,
@@ -127,7 +127,7 @@ class Box(pygame.sprite.Sprite):
             calc.dividing(self.value)
             self.return_loc(10)
             self.kill()
-        print(calc.total)
+#        print(calc.total)
 
 #        print(f'location: {self.location}, x: {self.rect.x}')
 #        print(f'locations: {fl.free_location}')
@@ -204,6 +204,31 @@ class Operator(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(topleft=(650,470)) # Draw rectangle
 
 
+class Conveyor(pygame.sprite.Sprite):
+    ''' Conveyor'''
+    def __init__(self):
+        super().__init__()
+        # Load frames
+        frame_1 = pygame.image.load('images/conveyor_1.png').convert_alpha()
+        frame_2 = pygame.image.load('images/conveyor_2.png').convert_alpha()
+        frame_3 = pygame.image.load('images/conveyor_3.png').convert_alpha()
+        frame_4 = pygame.image.load('images/conveyor_2.png').convert_alpha()
+
+        self.frames = [frame_1, frame_2, frame_3, frame_4]
+        self.animation_index = 0
+        self.image = self.frames[self.animation_index]
+        self.rect = self.image.get_rect(bottomleft=(-5,460))
+
+    def animation_state(self):
+        self.animation_index += 0.1
+        if self.animation_index >= len(self.frames):# If index exceeds list len
+            self.animation_index = 0 # Set index to 0
+        self.image = self.frames[int(self.animation_index)] # Pick image
+    
+    def update(self):
+        self.animation_state()
+
+
 fl = FreeLocation()
 calc = Calculator()
 
@@ -230,6 +255,8 @@ box_group = pygame.sprite.Group()    # Create a group for sprite
 box_group.add(Box(fl=fl, calc=calc))#Add instance of Box to the group
 operator_group = pygame.sprite.Group() # Create a group for operators
 operator_group.add(Operator('+')) # Add plus button
+conveyor_group = pygame.sprite.GroupSingle() # Create a group for conveyor
+conveyor_group.add(Conveyor()) # Add conveyor
 
 while True:
     for event in pygame.event.get():
@@ -264,12 +291,16 @@ while True:
 #            box_group.add(Box(fl=fl))
 
     screen.blit(background_surf,(0,0))   # Displays background
+    conveyor_group.draw(screen)
+    if len(fl.free_location) > 0:
+        conveyor_group.update()
     box_group.draw(screen) # Displays box
     box_group.update() # Move box
-    operator_group.draw(screen)
+    operator_group.draw(screen) # Display operators
 
 
-#    print(pygame.mouse.get_pos())  # Get mouse position
+
+    print(pygame.mouse.get_pos())  # Get mouse position
 
     pygame.display.update() # Updates screen
     clock.tick(60)  # Set max fps  
