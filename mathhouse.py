@@ -7,12 +7,32 @@ class Box(pygame.sprite.Sprite):
     def __init__(self, fl, calc):
         super().__init__()
         # Load all box images
-        image_1 = pygame.image.load('images/box_0.png').convert_alpha()
-        image_2 = pygame.image.load('images/box_1.png').convert_alpha()
+        image_0 = pygame.image.load('images/box_0.png').convert_alpha()
+        image_1 = pygame.image.load('images/box_1.png').convert_alpha()
+        image_2 = pygame.image.load('images/box_2.png').convert_alpha()
+        image_3 = pygame.image.load('images/box_3.png').convert_alpha()
+        image_4 = pygame.image.load('images/box_4.png').convert_alpha()
+        image_5 = pygame.image.load('images/box_5.png').convert_alpha()
+        image_6 = pygame.image.load('images/box_6.png').convert_alpha()
+        image_7 = pygame.image.load('images/box_7.png').convert_alpha()
+        image_8 = pygame.image.load('images/box_8.png').convert_alpha()
+        image_9 = pygame.image.load('images/box_9.png').convert_alpha()
+
         # Randomize value of the box
-        self.value = randint(0,1)
+        self.value = randint(0,3)
         # Dict to store values and images
-        images = {0: image_1, 1: image_2}
+        images = {
+            0: image_0,
+            1: image_1,
+            2: image_2,
+            3: image_3,
+            4: image_4,
+            5: image_5,
+            6: image_6,
+            7: image_7,
+            8: image_8,
+            9: image_9
+        }
         # Set image
         self.image = images[self.value]
         self.rect = self.image.get_rect(midleft=(-50,400)) # Draw rectangle
@@ -90,10 +110,24 @@ class Box(pygame.sprite.Sprite):
         # Pos 10
         self.action_at_position(10)
 
-        # Check for operation -> MAKE a NEW FUNCTION
-        if self.location == 10 and calc.add: # NOT WORKING
-            print('added')
-            print('--------')
+        # Check for operation
+        if self.location == 10 and calc.add:
+            calc.adding(self.value)
+            self.return_loc(10)
+            self.kill()
+        if self.location == 10 and calc.subtract:
+            calc.subtracting(self.value)
+            self.return_loc(10)
+            self.kill()
+        if self.location == 10 and calc.multiply:
+            calc.multiplying(self.value)
+            self.return_loc(10)
+            self.kill()
+        if self.location == 10 and calc.divide:
+            calc.dividing(self.value)
+            self.return_loc(10)
+            self.kill()
+        print(calc.total)
 
 #        print(f'location: {self.location}, x: {self.rect.x}')
 #        print(f'locations: {fl.free_location}')
@@ -125,6 +159,33 @@ class Calculator():
         self.multiply = False
         self.divide = False
         self.destroy = False
+
+    def adding(self, box_value):
+        self.total += box_value
+        return self.total
+    
+    def subtracting(self, box_value):
+        self.total -= box_value
+        return self.total
+    
+    def multiplying(self, box_value):
+        self.total *= box_value
+        return self.total
+
+    def dividing(self, box_value):
+        try:
+            result = self.total / box_value
+            rest = self.total % box_value
+            # If no reminder
+            if rest == 0:
+                return result
+            # If reminder exists
+            else:
+                return self.total
+                print('Reminder exists')
+        except ZeroDivisionError:
+            print('Division by 0!!!!')
+            return self.total
 
 
 class Operator(pygame.sprite.Sprite):
@@ -180,10 +241,24 @@ while True:
         if event.type == box_timer and len(fl.free_location) > 0:
             box_group.add(Box(fl=fl, calc=calc))
         # Check for operation
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_KP_PLUS:
-            calc.add = True
-        if event.type == pygame.KEYUP and event.key == pygame.K_KP_PLUS:
-            calc.add = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_KP_PLUS:
+                calc.add = True
+            if event.key == pygame.K_KP_MINUS:
+                calc.subtract = True
+            if event.key == pygame.K_KP_MULTIPLY:
+                calc.multiply = True
+            if event.key == pygame.K_KP_DIVIDE:
+                calc.divide = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_KP_PLUS:
+                calc.add = False
+            if event.key == pygame.K_KP_MINUS:
+                calc.subtract = False
+            if event.key == pygame.K_KP_MULTIPLY:
+                calc.multiply = False
+            if event.key == pygame.K_KP_DIVIDE:
+                calc.divide = False
         # Testing sequence
 #        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 #            box_group.add(Box(fl=fl))
