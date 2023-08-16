@@ -19,7 +19,7 @@ class Box(pygame.sprite.Sprite):
         image_9 = pygame.image.load('images/box_9.png').convert_alpha()
 
         # Randomize value of the box
-        self.value = randint(0,3)
+        self.value = randint(0,9)
         # Dict to store values and images
         images = {
             0: image_0,
@@ -35,7 +35,7 @@ class Box(pygame.sprite.Sprite):
         }
         # Set image
         self.image = images[self.value]
-        self.rect = self.image.get_rect(midleft=(-50,400)) # Draw rectangle
+        self.rect = self.image.get_rect(midleft=(-80,400)) # Draw rectangle
 
         self.location = 0
         self.speed = 2
@@ -68,9 +68,12 @@ class Box(pygame.sprite.Sprite):
 
     def update(self):
         # Move from pos 0 to 1
-        self.move_from_position_to_position(0)
+        if self.location == 0:
+            if (1) in fl.free_location:
+                if self.rect.x <= -50:
+                    self.rect.x += self.speed
         # Pos 1
-        if self.rect.x == 50 and 1 in fl.free_location:
+        if self.rect.x == -50 and 1 in fl.free_location:
             fl.remove(1)
             self.location = 1
         # Move from 1 to 2
@@ -127,10 +130,7 @@ class Box(pygame.sprite.Sprite):
             calc.dividing(self.value)
             self.return_loc(10)
             self.kill()
-        print(calc.total)
 
-#        print(f'location: {self.location}, x: {self.rect.x}')
-#        print(f'locations: {fl.free_location}')
 
 class FreeLocation():
     ''' Handles location related knowledge'''
@@ -153,6 +153,10 @@ class Calculator():
     ''' Does the math'''
     def __init__(self):
         self.total = 0
+        self.errors = 0
+        self.target = 0
+        self.drop_gravity = 0
+        self._drop_y = 0
 
         self.add = False
         self.subtract = False
@@ -163,7 +167,7 @@ class Calculator():
     def adding(self, box_value):
         self.total += box_value
         return self.total
-    
+        
     def subtracting(self, box_value):
         self.total -= box_value
         return self.total
@@ -181,32 +185,109 @@ class Calculator():
                 return result
             # If reminder exists
             else:
+                self.errors = 1
                 return self.total
-                print('Reminder exists')
         except ZeroDivisionError:
-            print('Division by 0!!!!')
+            self.errors = 2
             return self.total
 
+    def display_errors(self):
+        if self.errors == 1:
+            error1_surf = font_small_extra.render\
+                ('Division with remainders', True, 'Red').convert_alpha()
+            error1_rect = error1_surf.get_rect(topleft=(680,380))
+            screen.blit(error1_surf, error1_rect)
+        if self.errors == 2:
+            error1_surf = font_small_extra.render('Division by 0 !!!', True, 'Red')\
+                .convert_alpha()
+            error1_rect = error1_surf.get_rect(topleft=(680,380))
+            screen.blit(error1_surf, error1_rect)
 
-class Operator(pygame.sprite.Sprite):
-    ''' Handles operators and other buttons'''
-    def __init__(self, operator):
+    def display_total(self):
+        ''' Display total on machine'''
+        if self.total < 1000000:
+            total_surf = font.render(f'{self.total}', True, 'darkolivegreen1')\
+            .convert_alpha()
+            total_rect = total_surf.get_rect(topleft=(680,310))
+            screen.blit(total_surf, total_rect)
+        if self.total >= 1000000:
+            error1_surf = font_small.render('999 999', True, 'Red').convert_alpha()
+            error1_rect = error1_surf.get_rect(topleft=(680,320))
+            screen.blit(error1_surf, error1_rect)
+            error2_surf = font_small.render('limit', True, 'Red').convert_alpha()
+            error2_rect = error2_surf.get_rect(topleft=(680,360))
+            screen.blit(error2_surf, error2_rect)
+            error3_surf = font_small.render('exceeded', True, 'Red').convert_alpha()
+            error3_rect = error3_surf.get_rect(topleft=(680,400))
+            screen.blit(error3_surf, error3_rect)
+
+    def display_target(self):
+        ''' Display target'''
+        rect = pygame.Rect(0,0,80,60)
+        rect.bottomleft = (970,455)
+        pygame.draw.rect(
+            screen,
+            color='darkorange4',
+            rect=rect,
+            width=5,
+            border_radius=10
+            )
+        target_surf = target_font.render(f'{self.target}', True, 'darkorange4')\
+            .convert_alpha()
+        target_rect = target_surf.get_rect(midbottom=(1010,455))
+        screen.blit(target_surf, target_rect)
+        
+    def drop_target(self):
+        ''' Drop new target with random value'''
+        rect = pygame.Rect(0,0,80,60)
+        if self._drop_y < 450:
+            self.drop_gravity += 0.5
+            self._drop_y += self.drop_gravity
+            rect.bottomleft = (970,self._drop_y)
+            pygame.draw.rect(
+                screen,
+                color='darkorange4',
+                rect=rect,
+                width=5,
+                border_radius=10
+                )
+            target_surf = target_font.render(f'{self.target}', True, 'darkorange4')\
+                .convert_alpha()
+            target_rect = target_surf.get_rect(midbottom=(1010,self._drop_y))
+            screen.blit(target_surf, target_rect)
+            if self._drop_y == 5:
+                self.target = randint(1,20)
+        return self.target
+
+
+class Conveyor(pygame.sprite.Sprite):
+    ''' Conveyor'''
+    def __init__(self):
         super().__init__()
-        # Load all operators images
-        image_1 = pygame.image.load('images/plus.png').convert_alpha()
-        image_2 = pygame.image.load('images/box_1.png').convert_alpha()
-        self.operator = operator
-        # Dict to store values and images
-        images = {'+': image_1, '-': image_2}
-        # Set image
-        self.image = images[self.operator]
-        if self.operator == '+':
-            self.rect = self.image.get_rect(topleft=(650,470)) # Draw rectangle
+        # Load frames
+        frame_1 = pygame.image.load('images/conveyor_1.png').convert_alpha()
+        frame_2 = pygame.image.load('images/conveyor_2.png').convert_alpha()
+        frame_3 = pygame.image.load('images/conveyor_3.png').convert_alpha()
+
+        self.frames = [frame_1, frame_2, frame_3, frame_1, frame_2, frame_3]
+        self.animation_index = 0
+        self.image = self.frames[self.animation_index]
+        self.rect = self.image.get_rect(bottomleft=(-5,460))
+
+    def animation_state(self):
+        self.animation_index += 0.1
+        if self.animation_index >= len(self.frames):# If index exceeds list len
+            self.animation_index = 0 # Set index to 0
+        self.image = self.frames[int(self.animation_index)] # Pick image
+    
+    def update(self):
+        self.animation_state()
 
 
 fl = FreeLocation()
 calc = Calculator()
 
+game_status = 'get target'
 
 pygame.init()
 screen = pygame.display.set_mode((1200,800))    # Window size
@@ -214,22 +295,27 @@ pygame.display.set_caption('MathHouse')    # Window name
 icon = pygame.image.load('images/empty.png')   # Convert icon to surface
 pygame.display.set_icon(icon)   # Change icon
 clock = pygame.time.Clock() # Object to store time related issues
-test_font = pygame.font.Font(None, 50)  # Font type, font size
+font = pygame.font.Font('The Led Display St.ttf', 50) # Font type, font size
+font_small = pygame.font.Font('The Led Display St.ttf', 30) # Font type, font size
+font_small_extra = pygame.font.Font('The Led Display St.ttf', 12) # Font type, font size
+target_font = pygame.font.Font('Alien-Encounters-Regular.ttf',40)
 
 
 # Box movement timer 
 box_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(box_timer,1500)
+pygame.time.set_timer(box_timer,2000)
 
 
 # Static graphic
 background_surf = pygame.image.load('images/background_1.png').convert_alpha()
+machine_surf = pygame.image.load('images/machine.png').convert_alpha()
+
 
 # Dynamic graphic
 box_group = pygame.sprite.Group()    # Create a group for sprite
 box_group.add(Box(fl=fl, calc=calc))#Add instance of Box to the group
-operator_group = pygame.sprite.Group() # Create a group for operators
-operator_group.add(Operator('+')) # Add plus button
+conveyor_group = pygame.sprite.GroupSingle() # Create a group for conveyor
+conveyor_group.add(Conveyor()) # Add conveyor
 
 while True:
     for event in pygame.event.get():
@@ -242,6 +328,7 @@ while True:
             box_group.add(Box(fl=fl, calc=calc))
         # Check for operation
         if event.type == pygame.KEYDOWN:
+            calc.errors = 0 # Reset error message
             if event.key == pygame.K_KP_PLUS:
                 calc.add = True
             if event.key == pygame.K_KP_MINUS:
@@ -263,10 +350,29 @@ while True:
 #        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 #            box_group.add(Box(fl=fl))
 
-    screen.blit(background_surf,(0,0))   # Displays background
-    box_group.draw(screen) # Displays box
-    box_group.update() # Move box
-    operator_group.draw(screen)
+    screen.blit(background_surf,(0,0)) # Displays background
+    conveyor_group.draw(screen) # Display conveyor
+    screen.blit(machine_surf, (660,310)) # Display machine
+    pygame.draw.rect(screen, 'darkorange4', \
+        rect=pygame.Rect(935,455,150,10)) # Display shelf
+    
+    if game_status == 'get target':
+        calc.drop_target()
+        if calc._drop_y > 445:
+            game_status = 'play'
+
+    if game_status == 'play': 
+        if len(fl.free_location) > 0: # Animate conveyor
+            conveyor_group.update()
+        box_group.draw(screen) # Displays box
+        box_group.update() # Move box
+        calc.display_total() # Display total
+        calc.display_errors() # Display errors
+        calc.display_target() # Display target
+        print(f'total: {calc.total}, target: {calc.target}, status: {game_status}')
+        if calc.total == calc.target:
+            game_status = 'get target'      # NOT WORKING
+
 
 
 #    print(pygame.mouse.get_pos())  # Get mouse position
