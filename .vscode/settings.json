@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
         "blit",
+        "bottomleft",
+        "darkorange",
         "KEYDOWN",
         "KEYUP",
+        "midbottom",
         "midleft",
         "midtop",
         "spritecollide",

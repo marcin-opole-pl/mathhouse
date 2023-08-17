@@ -1,5 +1,6 @@
 import pygame
 from random import randint
+import time
 
 
 class Box(pygame.sprite.Sprite):
@@ -130,6 +131,10 @@ class Box(pygame.sprite.Sprite):
             calc.dividing(self.value)
             self.return_loc(10)
             self.kill()
+        if self.location == 10 and calc.destroy:
+            self.return_loc(10)
+            # Decrease life amount
+            self.kill()
 
 
 class FreeLocation():
@@ -152,11 +157,12 @@ class FreeLocation():
 class Calculator():
     ''' Does the math'''
     def __init__(self):
+        self.game_status = 'get target'
         self.total = 0
         self.errors = 0
         self.target = 0
         self.drop_gravity = 0
-        self._drop_y = 0
+        self.drop_y = 0
 
         self.add = False
         self.subtract = False
@@ -240,10 +246,10 @@ class Calculator():
     def drop_target(self):
         ''' Drop new target with random value'''
         rect = pygame.Rect(0,0,80,60)
-        if self._drop_y < 450:
+        if self.drop_y < 450:
             self.drop_gravity += 0.5
-            self._drop_y += self.drop_gravity
-            rect.bottomleft = (970,self._drop_y)
+            self.drop_y += self.drop_gravity
+            rect.bottomleft = (970,self.drop_y)
             pygame.draw.rect(
                 screen,
                 color='darkorange4',
@@ -253,11 +259,13 @@ class Calculator():
                 )
             target_surf = target_font.render(f'{self.target}', True, 'darkorange4')\
                 .convert_alpha()
-            target_rect = target_surf.get_rect(midbottom=(1010,self._drop_y))
+            target_rect = target_surf.get_rect(midbottom=(1010,self.drop_y))
             screen.blit(target_surf, target_rect)
-            if self._drop_y == 5:
+            if self.drop_y == 5:
                 self.target = randint(1,20)
-        return self.target
+        if self.drop_y > 445:
+            self.game_status = 'play'
+        return self.target, self.game_status
 
 
 class Conveyor(pygame.sprite.Sprite):
@@ -287,7 +295,6 @@ class Conveyor(pygame.sprite.Sprite):
 fl = FreeLocation()
 calc = Calculator()
 
-game_status = 'get target'
 
 pygame.init()
 screen = pygame.display.set_mode((1200,800))    # Window size
@@ -337,6 +344,8 @@ while True:
                 calc.multiply = True
             if event.key == pygame.K_KP_DIVIDE:
                 calc.divide = True
+            if event.key == pygame.K_KP_ENTER:
+                calc.destroy = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_KP_PLUS:
                 calc.add = False
@@ -346,6 +355,9 @@ while True:
                 calc.multiply = False
             if event.key == pygame.K_KP_DIVIDE:
                 calc.divide = False
+            if event.key == pygame.K_KP_ENTER:
+                calc.destroy = False
+
         # Testing sequence
 #        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 #            box_group.add(Box(fl=fl))
@@ -355,13 +367,14 @@ while True:
     screen.blit(machine_surf, (660,310)) # Display machine
     pygame.draw.rect(screen, 'darkorange4', \
         rect=pygame.Rect(935,455,150,10)) # Display shelf
-    
-    if game_status == 'get target':
-        calc.drop_target()
-        if calc._drop_y > 445:
-            game_status = 'play'
 
-    if game_status == 'play': 
+    print(f'total: {calc.total}, target: {calc.target}, status: {calc.game_status}, y: {calc.drop_y}')
+
+
+    if calc.game_status == 'get target':
+        calc.drop_target()
+
+    if calc.game_status == 'play':
         if len(fl.free_location) > 0: # Animate conveyor
             conveyor_group.update()
         box_group.draw(screen) # Displays box
@@ -369,10 +382,11 @@ while True:
         calc.display_total() # Display total
         calc.display_errors() # Display errors
         calc.display_target() # Display target
-        print(f'total: {calc.total}, target: {calc.target}, status: {game_status}')
         if calc.total == calc.target:
-            game_status = 'get target'      # NOT WORKING
-
+            calc.total = 0
+            calc.target = 0
+#            time.sleep(1)
+            calc.game_status = 'get target'
 
 
 #    print(pygame.mouse.get_pos())  # Get mouse position
