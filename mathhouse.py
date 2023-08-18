@@ -156,9 +156,10 @@ class FreeLocation():
 
 class Calculator():
     ''' Does the math'''
-    def __init__(self):
+    def __init__(self, chances, limit):
         self.game_status = 'get target'
-        self.chances = 10
+        self.chances = chances
+        self.limit_low, self.limit_high = limit
         self.score = 0
         self.total = 0
         self.errors = 0
@@ -266,7 +267,7 @@ class Calculator():
             target_rect = target_surf.get_rect(midbottom=(1010,self.drop_y))
             screen.blit(target_surf, target_rect)
             if self.drop_y == 5:
-                self.target = randint(1,20)
+                self.target = randint(self.limit_low, self.limit_high)
         return self.target
 
     def score_display(self):
@@ -304,9 +305,14 @@ class Conveyor(pygame.sprite.Sprite):
     def update(self):
         self.animation_state()
 
+# ADD PERSONALIZATION
+game_speed = 2000 # Speed in milliseconds
+chances = 5 # Number of allowed errors
+limit = (0,20) # Target range
 
 fl = FreeLocation()
-calc = Calculator()
+calc = Calculator(chances=chances, limit=limit)
+calc.game_status = 'intro'
 
 
 pygame.init()
@@ -318,12 +324,14 @@ clock = pygame.time.Clock() # Object to store time related issues
 font = pygame.font.Font('The Led Display St.ttf', 50) # Font type, font size
 font_small = pygame.font.Font('The Led Display St.ttf', 30) # Font type, font size
 font_small_extra = pygame.font.Font('The Led Display St.ttf', 12) # Font type, font size
-target_font = pygame.font.Font('Alien-Encounters-Regular.ttf',40)
+target_font = pygame.font.Font('Super Foods.ttf',40)
+over_font = pygame.font.Font('Alien-Encounters-Regular.ttf', 60)
+intro_font = pygame.font.Font('Super Foods.ttf',20)
 
 
 # Box movement timer 
 box_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(box_timer,2000)
+pygame.time.set_timer(box_timer,game_speed)
 
 
 # Static graphic
@@ -370,7 +378,20 @@ while True:
                 calc.divide = False
             if event.key == pygame.K_KP_ENTER:
                 calc.destroy = False
+        # Game over behavior
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_n and calc.game_status == 'game over':
+                pygame.quit()   
+                exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_y and calc.game_status == 'game over':
+                calc.game_status = 'get target'
+        # Intro
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and calc.game_status == 'intro':
+                calc.game_status = 'get target'
 
+#    print(calc.game_status)
         # Testing sequence
 #        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 #            box_group.add(Box(fl=fl))
@@ -383,19 +404,96 @@ while True:
     calc.score_display() # Display score
     calc.chances_display() # Display chances
 
+    if calc.chances == 0: # Game over
+        calc.game_status = 'game over'
+        calc.chances = chances
 
+    if calc.game_status == 'intro':
+        width = 800
+        height = 400
+        x_pos = (1200-width)/2
+        y_pos = (800-height)/2
+        pygame.draw.rect(
+            screen,
+            'cornsilk4',
+            rect=pygame.Rect(x_pos,y_pos,width,height)
+            ) 
+        pygame.draw.rect(
+            screen,
+            'cornsilk',
+            rect=pygame.Rect(x_pos,y_pos,width,height),
+            width=5,
+            border_radius=10
+            ) 
+        welcome_surf = over_font.render('Welcome to Mathhouse', True, 'cornsilk')\
+            .convert_alpha()
+        screen.blit(welcome_surf, (x_pos+10, y_pos+30))
+        info_surf = intro_font.render(
+            'Your goal is to reach the target (the one that is being dropped on the right).',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info_surf, (x_pos+20, y_pos+120))
+        info1_surf = intro_font.render(
+            'This game is keyboard operated only. Use NumPad keys:',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info1_surf, (x_pos+20, y_pos+150))
+        info2_surf = intro_font.render(
+            'to divide:  / , to multiply:  * , to subtract:  - , to add:  +',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info2_surf, (x_pos+20, y_pos+180))
+        info3_surf = intro_font.render(
+            'Enter is a special key, that removes unwanted box from the conveyor.',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info3_surf, (x_pos+20, y_pos+220))
+        info4_surf = intro_font.render(
+            'But there is a price, every time you use Enter, you lose one chance.',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info4_surf, (x_pos+20, y_pos+240))
+        info5_surf = intro_font.render(
+            'Every time you divide by zero,',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info5_surf, (x_pos+20, y_pos+270))
+        info6_surf = intro_font.render(
+            'or there is a reminder you will also lose a chance.',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info6_surf, (x_pos+20, y_pos+290))
+        info7_surf = intro_font.render(
+            'Once all the chances are gone, game is over. ',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info7_surf, (x_pos+20, y_pos+310))
+        info8_surf = intro_font.render(
+            'Press SPACE to start the game. Good luck. ',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(info8_surf, (x_pos+20, y_pos+350))
 
-    if calc.game_status == 'get target':
-        calc.drop_target()
+    elif calc.game_status == 'get target':
+        calc.drop_target() # Drop target
         if calc.drop_y > 440:
             calc.game_status = 1
-    
-    if calc.game_status == 1:
+
+    elif calc.game_status == 1:
         calc.drop_y = 0
         calc.drop_gravity= 0
         calc.game_status = 'play'
 
-    if calc.game_status == 'play':
+    elif calc.game_status == 'play':
         if len(fl.free_location) > 0: # Animate conveyor
             conveyor_group.update()
         box_group.draw(screen) # Displays box
@@ -406,13 +504,52 @@ while True:
         if calc.total == calc.target:
             calc.score += 1
             calc.game_status = 2
-    
-    if calc.game_status == 2:
+
+    elif calc.game_status == 2:
         time.sleep(0.25)
         calc.total = 0
         calc.target = 0
         calc.game_status = 'get target'
 
+    elif calc.game_status == 'game over':
+        box_group.empty()
+        calc.score = 0
+        calc.total = 0
+        fl.free_location = [1,2,3,4,5,6,7,8,9,10]
+        width = 640
+        height = 340
+        x_pos = (1200-width)/2
+        y_pos = (800-height)/2
+        pygame.draw.rect(
+            screen,
+            'cornsilk4',
+            rect=pygame.Rect(x_pos,y_pos,width,height)
+            ) 
+        pygame.draw.rect(
+            screen,
+            'cornsilk',
+            rect=pygame.Rect(x_pos,y_pos,width,height),
+            width=5,
+            border_radius=10
+            ) 
+        over_surf = over_font.render('GAME OVER', True, 'cornsilk').convert_alpha()
+        screen.blit(over_surf, (x_pos+150, y_pos+50))
+        choice_surf = target_font.render(
+            'Do you want to play again?',
+            True,
+            'cornsilk'
+            ).convert_alpha()
+        screen.blit(choice_surf, (x_pos+20, y_pos+150))
+        yes_surf = over_font.render('YES', True, 'chartreuse4').convert_alpha()
+        screen.blit(yes_surf, (x_pos+100, y_pos+220))
+        no_surf = over_font.render('NO', True, 'darkorange4').convert_alpha()
+        screen.blit(no_surf, (x_pos+450, y_pos+220))
+        info_surf = font_small_extra.render(
+            'Press "y" or "n" on your keyboard',
+            True,
+            'darkslateblue'
+            ).convert_alpha()
+        screen.blit(info_surf, (x_pos+200, y_pos+300))
 
 #    print(pygame.mouse.get_pos())  # Get mouse position
 
