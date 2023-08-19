@@ -2,6 +2,11 @@ import pygame
 from random import randint
 import time
 
+# ADD PERSONALIZATION
+game_speed = 2000 # Speed in milliseconds
+chances = 2 # Number of allowed errors
+limit = (0,20) # Target range (min -9999, max 9999)
+
 
 class Box(pygame.sprite.Sprite):
     ''' Operates boxes behavior'''
@@ -176,11 +181,11 @@ class Calculator():
     def adding(self, box_value):
         self.total += box_value
         return self.total
-        
+
     def subtracting(self, box_value):
         self.total -= box_value
         return self.total
-    
+
     def multiplying(self, box_value):
         self.total *= box_value
         return self.total
@@ -234,8 +239,26 @@ class Calculator():
 
     def display_target(self):
         ''' Display target'''
-        rect = pygame.Rect(0,0,80,60)
-        rect.bottomleft = (970,455)
+        if self.limit_low < -999 or self.limit_high > 999: # Adjust target display
+            width = 220 # accordingly to limit size
+            height = 100
+            font_name = target_font_ex_large
+            x_loc = 940
+            font_x_loc = x_loc + 110
+        elif -999 <= self.limit_low < -99 or 99 < self.limit_high <= 999:
+            width = 120
+            height = 80
+            font_name = target_font_large
+            x_loc = 950
+            font_x_loc = x_loc + 60
+        else:
+            width = 80
+            height = 60
+            font_name = target_font
+            x_loc = 960
+            font_x_loc = x_loc + 40
+        rect = pygame.Rect(0,0,width,height)
+        rect.bottomleft = (x_loc,455)
         pygame.draw.rect(
             screen,
             color='darkorange4',
@@ -243,18 +266,37 @@ class Calculator():
             width=5,
             border_radius=10
             )
-        target_surf = target_font.render(f'{self.target}', True, 'darkorange4')\
+        target_surf = font_name.render(f'{self.target}', True, 'darkorange4')\
             .convert_alpha()
-        target_rect = target_surf.get_rect(midbottom=(1010,455))
+        target_rect = target_surf.get_rect(midbottom=(font_x_loc,455))
         screen.blit(target_surf, target_rect)
-        
+
     def drop_target(self):
         ''' Drop new target with random value'''
-        rect = pygame.Rect(0,0,80,60)
+        if self.limit_low < -999 or self.limit_high > 999: # Adjust target display
+            width = 220 # accordingly to limit size
+            height = 100
+            font_name = target_font_ex_large
+            x_loc = 940
+            font_x_loc = x_loc + 110
+        elif -999 <= self.limit_low < -99 or 99 < self.limit_high <= 999:
+            width = 120
+            height = 80
+            font_name = target_font_large
+            x_loc = 950
+            font_x_loc = x_loc + 60
+        else:
+            width = 80
+            height = 60
+            font_name = target_font
+            x_loc = 960
+            font_x_loc = x_loc + 40
+        rect = pygame.Rect(0,0,width,height)
+        # move target
         if self.drop_y < 450:
             self.drop_gravity += 0.5
             self.drop_y += self.drop_gravity
-            rect.bottomleft = (970,self.drop_y)
+            rect.bottomleft = (x_loc,self.drop_y)
             pygame.draw.rect(
                 screen,
                 color='darkorange4',
@@ -262,9 +304,9 @@ class Calculator():
                 width=5,
                 border_radius=10
                 )
-            target_surf = target_font.render(f'{self.target}', True, 'darkorange4')\
+            target_surf = font_name.render(f'{self.target}', True, 'darkorange4')\
                 .convert_alpha()
-            target_rect = target_surf.get_rect(midbottom=(1010,self.drop_y))
+            target_rect = target_surf.get_rect(midbottom=(font_x_loc,self.drop_y))
             screen.blit(target_surf, target_rect)
             if self.drop_y == 5:
                 self.target = randint(self.limit_low, self.limit_high)
@@ -305,10 +347,6 @@ class Conveyor(pygame.sprite.Sprite):
     def update(self):
         self.animation_state()
 
-# ADD PERSONALIZATION
-game_speed = 2000 # Speed in milliseconds
-chances = 5 # Number of allowed errors
-limit = (0,20) # Target range
 
 fl = FreeLocation()
 calc = Calculator(chances=chances, limit=limit)
@@ -325,6 +363,8 @@ font = pygame.font.Font('The Led Display St.ttf', 50) # Font type, font size
 font_small = pygame.font.Font('The Led Display St.ttf', 30) # Font type, font size
 font_small_extra = pygame.font.Font('The Led Display St.ttf', 12) # Font type, font size
 target_font = pygame.font.Font('Super Foods.ttf',40)
+target_font_large = pygame.font.Font('Super Foods.ttf',60)
+target_font_ex_large = pygame.font.Font('Super Foods.ttf',80)
 over_font = pygame.font.Font('Alien-Encounters-Regular.ttf', 60)
 intro_font = pygame.font.Font('Super Foods.ttf',20)
 
@@ -400,7 +440,7 @@ while True:
     conveyor_group.draw(screen) # Display conveyor
     screen.blit(machine_surf, (660,310)) # Display machine
     pygame.draw.rect(screen, 'darkorange4', \
-        rect=pygame.Rect(935,455,150,10)) # Display shelf
+        rect=pygame.Rect(935,455,250,10)) # Display shelf
     calc.score_display() # Display score
     calc.chances_display() # Display chances
 
