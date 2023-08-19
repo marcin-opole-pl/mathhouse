@@ -53,6 +53,10 @@ ___
 
     Conveyor class only controls behavior of the conveyor. It is the simplest class.
 
+#### Personalization
+
+Lines 6 to 8 can be used to personalize behavior of the program. You should start with changing the number of chances. When you are more comfortable change the range (decrease the low range by adding negative integers). Do not exceed the min and max value, as display will not work properly. Finally you can play with speed, by decreasing milliseconds amount (the lower the value, the faster new boxes will appear on the conveyor belt).  
+
 ### Final word
 
 This is my second project of this scale. I am fully aware of missing functionality, that would improve user's experience. Project will evolve...
