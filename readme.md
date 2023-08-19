@@ -45,9 +45,13 @@ ___
 3. Program overview
 
     Box class is responsible for boxes' behavior and value of each box.
-    FreeLocation contains list of all available locations, and controls it.
-    Calculator is the brain this program. It does all the math, creates target values, compares actual value with target, measures score and control available chances.
-    Conveyor class only controls behavior of the conveyor.
+    Every time box is created, it takes random value from range 0-9. Box is only created when FreeLocation list is not empty. By creation of box, FreeLocation list is appended. To enable proper existence of each Box object, class takes as attributes object of FreeLocation class and object of Calculator class.
+
+    FreeLocation class contains list of all available locations, and controls it. It exists independently.
+
+    Calculator class is the brain this program. It does all the math, creates target values, compares actual value with target, measures score and control available chances. When box reaches its final location (next to the machine), and adequate key is pressed, the Calculator object does the math. Then it compares it to target value, if both values are equal, score is raised, and new sequence of boxes is being released. Calculator object is also responsible for catching division errors ( division by zero, and division with reminder). Finally it keep track of chances.
+
+    Conveyor class only controls behavior of the conveyor. It is the simplest class.
 
 ### Final word
 
