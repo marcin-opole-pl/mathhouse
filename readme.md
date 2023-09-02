@@ -1,6 +1,8 @@
 
 # Mathhouse
 
+### This program was submitted as a final project for Harvard's CS50X
+
 ## Video Demo:  [Mathhouse](https://youtu.be/hJUcvj_EmGc)
 
 ### Description
